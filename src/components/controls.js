@@ -13,9 +13,9 @@ export default class Controls {
         };
         this.primBinding = pane.addBinding(
             this.state, 'primitive',
-            { 
-                options: this.getPrimitiveOptions(), 
-                label: "primitive", 
+            {
+                options: this.getPrimitiveOptions(),
+                label: "primitive",
             }
         );
         this.primBinding.on('change', (e) => {
@@ -95,5 +95,14 @@ export default class Controls {
             min: -180,
             max: 180,
         });
+    }
+
+    refreshList() {
+        this.primBinding.options = Object.entries(this.getPrimitiveOptions())
+            .map(([key, value]) => ({
+                text: key,
+                value: value
+            }));
+        this.primBinding.refresh();
     }
 }

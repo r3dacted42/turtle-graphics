@@ -5,6 +5,7 @@ export default class Turtle {
     constructor(x, y) {
         this.name = 'turtle';
         // point position
+        this.initPos = [x, y];
         this.position = [x, y];
         // turn angle
         this.angle = 0;
