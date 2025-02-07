@@ -20,28 +20,40 @@ export default class CommandProcessor {
     processCommand(cmd) {
         const tokens = cmd.split(' ');
         switch (tokens[0]) {
+            case 'pen': {
+                if (tokens[1] === 'down') {
+                    // start new primitive
+                    this.setFeedback("new primitive");
+                } else if (tokens[1] === 'up') {
+                    // end primitive
+                    this.setFeedback("end primitive");
+                } else {
+                    this.setFeedback("invalid cmd");
+                }
+                break;
+            }
             case 'forward': {
                 const fwdAmount = Number.parseFloat(tokens[1]);
                 if (isNaN(fwdAmount)) {
-                    this.setFeedback("couldn't parse forward amount");
+                    this.setFeedback("err parsing fwd arg");
                 } else {
                     this.turtle.forward(fwdAmount);
-                    this.setFeedback(`moved forward by ${fwdAmount} units`);
+                    this.setFeedback(`forward ${fwdAmount}`);
                 }
                 break;
             }
             case 'turn': {
                 const turnAmount = Number.parseFloat(tokens[1]);
                 if (isNaN(turnAmount)) {
-                    this.setFeedback("couldn't parse turn amount");
+                    this.setFeedback("err parsing turn arg");
                 } else {
                     this.turtle.turn(turnAmount);
-                    this.setFeedback(`turned ${Math.abs(turnAmount)} degrees ${turnAmount > 0 ? "ccw" : "cw"}`);
+                    this.setFeedback(`turn ${Math.abs(turnAmount)} ${turnAmount > 0 ? "ccw" : "cw"}`);
                 }
                 break;
             }
             default: {
-                this.setFeedback("invalid command");
+                this.setFeedback("invalid cmd");
             }
         }
     }

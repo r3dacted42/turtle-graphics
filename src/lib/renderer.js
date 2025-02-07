@@ -56,17 +56,17 @@ export class WebGLRenderer {
 	render(scene, shader) {
 		const resMat = this.resolutionMatrix();
 
-		scene.primitives.forEach(function (primitive) {
+		scene.getPrimitives().forEach(function (primitive) {
 			primitive.updateTransformMatrix(resMat);
-			for (const mode of primitive.getModes()) {
+			for (const mode of primitive.getDrawModes()) {
 				shader.bindArrayBuffer(
 					shader.vertexAttributesBuffer,
-					primitive.vertices
+					mode.vertices
 				);
 				shader.fillAttributeData("a_position", 3, 0, 0);
 				shader.setUniformMatrix3fv("u_matrix", primitive.transform.transformMatrix);
 				shader.setUniform4f("u_color", mode.color);
-				shader.drawArrays(primitive.jsverts.length, mode.drawMode);
+				shader.drawArrays(mode.vertices.length / 3, mode.drawMode);
 			}
 		});
 	}
@@ -78,12 +78,5 @@ export class WebGLRenderer {
 
 	getCanvas() {
 		return this.domElement;
-	}
-
-
-	// gets mouse click reduced to the form of clip space
-	// uses the mouseEvent target attribute to calculate the mouse position in clip space of webGL canvas
-	mouseToClipCoord(mouseEvent) {
-		// TO DO 
 	}
 }

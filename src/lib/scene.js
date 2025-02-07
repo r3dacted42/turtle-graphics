@@ -1,8 +1,9 @@
 export class Scene
 {
-	constructor()
+	constructor(turle)
 	{
 		this.primitives = []
+		this.turtle = turle;
 	}
 
 	add(primitive)
@@ -26,7 +27,7 @@ export class Scene
 
 	getPrimitives() 
 	{
-		return this.primitives;
+		return [...this.primitives, this.turtle];
 	}
 
 
@@ -39,10 +40,5 @@ export class Scene
 	getPrimitiveIndex(primitive) 
 	{
 		return this.primitives.indexOf(primitive);
-	}
-
-	centroid()
-	{
-		// @ToDo : Return the centroid as per the requirements of mode-2
 	}
 }

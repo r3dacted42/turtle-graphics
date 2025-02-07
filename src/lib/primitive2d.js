@@ -1,37 +1,60 @@
 import { vec2 } from "gl-matrix";
 import { Transform } from "./transform";
+import { Vertex } from "./vertex";
+import { drawModes as allDrawModes } from "./drawModes";
+import { hexToRGBA } from "./utils";
 
 export class Primitive2D {
-    constructor(name, vertices, color) {
+    constructor(name, fillColor = null, lineColor = null) {
         this.name = name;
-        this.jsverts = vertices;
+        this.verts = [];
         this.z = 1;
-        const temp = [];
-        for (const v of vertices) {
-            temp.push(v[0]);
-            temp.push(v[1]);
-            temp.push(this.z);
-        }
-        this.vertices = new Float32Array(temp);
-        this.fillColor = color;
-        this.lineColor = [0.25, 0.25, 0.25, 1];
+        this.fillColor = fillColor ?? "#fff";
+        this.lineColor = lineColor ?? "#000",
+        this.currentMode = {
+            fillMode: allDrawModes().tfan,
+            lineMode: allDrawModes().lstrip,
+        };
+        this.modes = [{
+            ...this.currentMode,
+            vertices: [],
+        }];
         this.transform = new Transform();
         this.fill = false;
-        this.lineDrawMode = window['glContext'].LINE_STRIP;
-        this.fillDrawMode = window['glContext'].TRIANGLE_FAN;
         this.updateCentroid();
     }
 
+    setMode(lineMode = null, fillMode = null) {
+        this.currentMode = {
+            fillMode: fillMode ?? this.currentMode.fillMode,
+            lineMode: lineMode ?? this.currentMode.lineMode,
+        };
+        this.modes = [...this.modes, {
+            ...this.currentMode,
+            vertices: [],
+        }];
+    }
+
     addVertex(x, y) {
-        this.jsverts = [...this.jsverts, [x, y]];
-        const temp = [];
-        for (const v of this.jsverts) {
-            temp.push(v[0]);
-            temp.push(v[1]);
-            temp.push(this.z);
-        }
-        this.vertices = new Float32Array(temp);
+        const newVert = new Vertex(x, y);
+        this.modes[this.modes.length - 1].vertices.push(newVert);
         this.updateCentroid();
+    }
+
+    setFillColor(color) {
+        this.fillColor = color;
+    }
+
+    setLineColor(color) {
+        this.lineColor = color;
+    }
+
+    activate() {
+        this.active = true;
+    }
+
+    deactivate() {
+        this.active = false;
     }
 
     rotate(angleDegrees) {
@@ -39,37 +62,56 @@ export class Primitive2D {
     }
 
     setScale(x, y) {
-        this.transform.scale[0] = x;
-        this.transform.scale[1] = y;
+        this.transform.scale.x = x;
+        this.transform.scale.y = y;
     }
 
     translate(x, y) {
-        this.transform.translate[0] += x;
-        this.transform.translate[1] += y;
+        this.transform.translate.x += x;
+        this.transform.translate.y += y;
     }
 
-    getModes() {
-        const modes = [{
-            drawMode: this.lineDrawMode,
-            color: this.lineColor,
-        }];
-        if (this.fill) {
-            modes.push({
-                drawMode: this.fillDrawMode,
-                color: this.fillColor,
+    getDrawModes() {
+        const drawModes = [];
+        for (const mode of this.modes) {
+            const vertices = new Float32Array(
+                mode.vertices.reduce((acc, v) => [...acc, v.x, v.y, this.z], [])
+            );
+            if (this.fill) {
+                drawModes.push({
+                    vertices: vertices,
+                    drawMode: mode.fillMode,
+                    color: hexToRGBA(this.fillColor),
+                });
+            }
+            drawModes.push({
+                vertices: vertices,
+                drawMode: mode.lineMode,
+                color: hexToRGBA(this.lineColor),
             });
+            if (this.active) {
+                drawModes.push({
+                    vertices: vertices,
+                    drawMode: allDrawModes().lloop,
+                    color: [1, 1, 1, 1],
+                });
+            }
         }
-        return modes;
+        return drawModes;
     }
 
     updateCentroid() {
         const centroid = [0, 0];
-        for (const v of this.jsverts) {
-            centroid[0] += v[0];
-            centroid[1] += v[1];
+        let vertCount = 0;
+        for (const mode of this.modes) {
+            for (const v of mode.vertices) {
+                centroid[0] += v.x;
+                centroid[1] += v.y;
+                vertCount++;
+            }
         }
-        centroid[0] /= this.jsverts.length;
-        centroid[1] /= this.jsverts.length;
+        centroid[0] /= vertCount;
+        centroid[1] /= vertCount;
         this.centroid = vec2.fromValues(centroid[0], centroid[1]);
     }
 

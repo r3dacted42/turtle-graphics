@@ -34,14 +34,14 @@ export default class Turtle {
         console.log(rad);
         const temp = mat3.create();
         mat3.fromTranslation(temp, [0, -amount]);
-        console.log("translation:", temp);
+        // console.log("translation:", temp);
         mat3.multiply(temp, mat3.fromRotation(mat3.create(), rad), temp);
-        console.log("post rot:", temp);
+        // console.log("post rot:", temp);
         const delta = vec2.create();
         vec2.transformMat3(delta, delta, temp);
         this.position[0] += delta[0];
         this.position[1] += delta[1];
-        console.log("new position:", this.position);
+        // console.log("new position:", this.position);
         this.updateVerts();
     }
 
@@ -59,7 +59,6 @@ export default class Turtle {
         for (let i = 0; i < verts.length; i ++) {
             vec2.transformMat3(verts[i], verts[i], temp);
         }
-        this.jsverts = verts;
         const _p = [];
         for (const v of verts) {
             _p.push(v[0]);
@@ -69,13 +68,15 @@ export default class Turtle {
         this.vertices = new Float32Array(_p);
     }
 
-    getModes() {
+    getDrawModes() {
         const modes = [{
-            drawMode: this.lineDrawMode,
-            color: this.lineColor,
-        },{
+            vertices: this.vertices,
             drawMode: this.fillDrawMode,
             color: this.fillColor,
+        },{
+            vertices: this.vertices,
+            drawMode: this.lineDrawMode,
+            color: this.lineColor,
         }];
         return modes;
     }
