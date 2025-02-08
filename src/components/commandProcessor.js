@@ -1,62 +1,53 @@
 import { Primitive2D } from "../lib/primitive2d";
 
 export default class CommandProcessor {
-    constructor(scene, onPrimEnd) {
+    constructor(scene, onPrimStart, onPrimEnd) {
         this.scene = scene;
         this.turtle = scene.turtle;
-        this.cmdInput = document.getElementById('cmd-input');
-        this.cmdFeedback = document.getElementById('cmd-feedback');
-        
-        this.cmdInput.addEventListener("keydown", (e) => {
-            if (e.key !== 'Enter') return;
-            const cmd = String(this.cmdInput.value);
-            if (cmd.length === 0) return;
-            this.processCommand(cmd);
-            this.cmdInput.value = "";
-        });
-
         this.currentPrimitive = null;
+        this.onPrimStart = onPrimStart;
         this.onPrimEnd = onPrimEnd;
     }
 
-    setFeedback(s) {
-        this.cmdFeedback.textContent = s;
-    }
-
-    processCommand(cmd) {
+    processCommand(cmd, state) {
         const tokens = cmd.split(' ');
+        let res = false;
         switch (tokens[0]) {
             case 'pen': {
                 if (tokens[1] === 'down') {
-                    // start new primitive
-                    this.setFeedback("new primitive");
+                    res = true;
                     this.currentPrimitive = new Primitive2D(`prim${this.scene.primitives.length}`);
                     this.currentPrimitive.addVertex(this.turtle.position[0], this.turtle.position[1]);
                     this.scene.add(this.currentPrimitive);
+                    this.onPrimStart();
                 } else if (tokens[1] === 'up') {
-                    // end primitive
-                    this.setFeedback("end primitive");
+                    res = true;
                     this.currentPrimitive.fill = true;
                     this.currentPrimitive = null;
                     this.onPrimEnd();
                 } else if (tokens[1] === 'reset') {
                     this.turtle.position = this.turtle.initPos;
-                    this.setFeedback("turtle position reset");
+                    res = true;
                     this.turtle.angle = 0;
                     this.turtle.forward(0);
                 } else {
-                    this.setFeedback("invalid cmd");
+                    res = "!# invalid cmd";
                 }
                 break;
             }
             case 'forward': {
                 const fwdAmount = Number.parseFloat(tokens[1]);
                 if (isNaN(fwdAmount)) {
-                    this.setFeedback("err parsing fwd arg");
+                    res = "!# err parsing fwd arg"
                 } else {
                     this.turtle.forward(fwdAmount);
-                    this.setFeedback(`forward ${fwdAmount}`);
+                    res = true;
                     if (this.currentPrimitive) {
+                        if (state.lineModeChanged || state.fillModeChanged) {
+                            this.currentPrimitive.setMode(state.lineMode, state.fillMode);
+                            state.lineModeChanged = false;
+                            state.fillModeChanged = false;
+                        }
                         this.currentPrimitive.addVertex(this.turtle.position[0], this.turtle.position[1]);
                     }
                 }
@@ -65,16 +56,17 @@ export default class CommandProcessor {
             case 'turn': {
                 const turnAmount = Number.parseFloat(tokens[1]);
                 if (isNaN(turnAmount)) {
-                    this.setFeedback("err parsing turn arg");
+                    res = "!# err parsing turn arg"
                 } else {
                     this.turtle.turn(turnAmount);
-                    this.setFeedback(`turn ${Math.abs(turnAmount)} ${turnAmount > 0 ? "ccw" : "cw"}`);
+                    res = true;
                 }
                 break;
             }
             default: {
-                this.setFeedback("invalid cmd");
+                res = "!# invalid cmd";
             }
         }
+        return res;
     }
 }

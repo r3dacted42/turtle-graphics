@@ -1,4 +1,4 @@
-import { vec2, mat3 } from 'gl-matrix';
+import { mat3 } from 'gl-matrix';
 
 export class Transform
 {

@@ -52,7 +52,7 @@ export class Primitive2D {
     activate() {
         this.active = true;
     }
-
+    
     deactivate() {
         this.active = false;
     }
@@ -92,8 +92,8 @@ export class Primitive2D {
             if (this.active) {
                 drawModes.push({
                     vertices: vertices,
-                    drawMode: allDrawModes().lloop,
-                    color: [1, 1, 1, 1],
+                    drawMode: allDrawModes().points,
+                    color: hexToRGBA("#fff"),
                 });
             }
         }

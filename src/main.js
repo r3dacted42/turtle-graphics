@@ -3,7 +3,6 @@ import { Scene, WebGLRenderer, Shader } from './lib/threeD.js';
 import { vertexShaderSrc } from './shaders/vertex.js';
 import { fragmentShaderSrc } from './shaders/fragment.js';
 import Turtle from './components/turtle.js';
-import CommandProcessor from './components/commandProcessor.js';
 import { Primitive2D } from './lib/primitive2d.js';
 import { drawModes } from './lib/drawModes.js';
 import Controls from './components/controls.js';
@@ -15,7 +14,7 @@ renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 const shader = new Shader(
   renderer.glContext(),
   vertexShaderSrc,
-  fragmentShaderSrc
+  fragmentShaderSrc,
 );
 
 shader.use();
@@ -30,9 +29,6 @@ document.addEventListener("click",(event) => {
 });
 
 const controls = new Controls(scene);
-const commandProcessor = new CommandProcessor(scene, () => {
-  controls.refreshList();
-});
 
 const resizeCanvasToDisplaySize = () => {
   const {width, height} = renderer.getSize();
@@ -52,7 +48,7 @@ const animation = () => {
 renderer.setAnimationLoop(animation);
 
 function addDefaultPrimitives(scene) {
-  const p1 = new Primitive2D('prim0', "#366e36");
+  const p1 = new Primitive2D('prim0', "#3c953c");
   p1.addVertex(500, 500);
   p1.addVertex(500, 300);
   p1.addVertex(300, 300);
@@ -64,7 +60,7 @@ function addDefaultPrimitives(scene) {
   p1.rotate(10);
   p1.setScale(0.75, 0.7);
 
-  const p2 = new Primitive2D('prim1', "#963131");
+  const p2 = new Primitive2D('prim1', "#c83232");
   p2.setMode(null, drawModes().triangles);
   p2.addVertex(557, 317);
   p2.addVertex(478, 411);
@@ -81,7 +77,7 @@ function addDefaultPrimitives(scene) {
   p2.translate(-150, -50);
   p2.rotate(5);
 
-  const p3 = new Primitive2D('prim2', "#5b4393");
+  const p3 = new Primitive2D('prim2', "#7f51eb");
   p3.addVertex(449, 401);
   p3.addVertex(572, 394);
   p3.addVertex(567, 493);
@@ -92,7 +88,7 @@ function addDefaultPrimitives(scene) {
   scene.add(p3);
 
   
-  const p4 = new Primitive2D('prim3', "#a835a8");
+  const p4 = new Primitive2D('prim3', "#d528d5");
   p4.setMode(null, drawModes().triangles);
   p4.addVertex(500, 300);
   p4.addVertex(570, 300);
