@@ -24,14 +24,14 @@ const scene = new Scene(turtle);
 
 addDefaultPrimitives(scene);
 
-document.addEventListener("click",(event) => {
+document.addEventListener("click", (event) => {
   console.log("clicked at ", event.clientX, event.clientY);
 });
 
 const controls = new Controls(scene);
 
 const resizeCanvasToDisplaySize = () => {
-  const {width, height} = renderer.getSize();
+  const { width, height } = renderer.getSize();
   if (canvas.clientWidth != width ||
     canvas.clientHeight != height) {
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
@@ -40,7 +40,7 @@ const resizeCanvasToDisplaySize = () => {
 
 
 const animation = () => {
-  renderer.clear(0.3, 0.3, 0.3, 1);
+  renderer.clear(0.2, 0.2, 0.3, 1);
   renderer.render(scene, shader);
   resizeCanvasToDisplaySize();
 }
@@ -87,7 +87,7 @@ function addDefaultPrimitives(scene) {
   p3.rotate(5);
   scene.add(p3);
 
-  
+
   const p4 = new Primitive2D('prim3', "#d528d5");
   p4.setMode(null, drawModes().triangles);
   p4.addVertex(500, 300);

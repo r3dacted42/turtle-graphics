@@ -19,12 +19,12 @@ export default class Controls {
             this.state, 'primitive',
             {
                 options: this.getPrimitiveOptions(),
-                label: "primitive",
+                label: undefined,
             }
         );
         this.primBinding.on('change', (e) => {
             if (this.state.lastPrim !== -1) {
-                this.scene.primitives[this.state.lastPrim].deactivate();
+                this.scene.primitives[this.state.lastPrim]?.deactivate();
             }
             this.showPrimitiveControls(e.value);
             this.state.lastPrim = e.value;
@@ -128,6 +128,63 @@ export default class Controls {
             parse: (v) => String(v),
             value: '',
         });
+        const cmdInputElem = this.cmdInput.element.getElementsByTagName('input')[0];
+        cmdInputElem.focus();
+        this.cmdFolder = this.cmdPane.addFolder({
+            title: 'command pallete',
+            expanded: false,
+        });
+        this.cmdFolder.addButton({
+            title: 'pen down',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            this.cmdInput.value = 'pen down';
+        });
+        this.cmdFolder.addButton({
+            title: 'pen up',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            this.cmdInput.value = 'pen up';
+        });
+        this.cmdFolder.addButton({
+            title: 'pen reset',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            this.cmdInput.value = 'pen reset';
+        });
+        this.cmdFolder.addButton({
+            title: 'pen hide',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            this.cmdInput.value = 'pen hide';
+        });
+        this.cmdFolder.addButton({
+            title: 'pen show',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            this.cmdInput.value = 'pen show';
+        });
+        this.cmdFolder.addButton({
+            title: 'forward $FARG',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            cmdInputElem.value = 'forward $FARG';
+            cmdInputElem.setSelectionRange(8, 13);
+        });
+        this.cmdFolder.addButton({
+            title: 'turn $TARG',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            cmdInputElem.value = 'turn $TARG';
+            cmdInputElem.setSelectionRange(5, 13);
+        });
+        this.cmdFolder.addButton({
+            title: 'repeat $RARG { forward $FARG turn $TARG }',
+        }).on('click', () => {
+            cmdInputElem.focus();
+            cmdInputElem.value = 'repeat $RARG { forward $FARG turn $TARG }';
+            cmdInputElem.setSelectionRange(7, 12);
+        });
         this.cmdState = {
             primNameInp: null,
             fillCheckBox: null,
@@ -183,8 +240,6 @@ export default class Controls {
                 this.refreshList();
             },
         );
-        const cmdInputElem = this.cmdInput.element.getElementsByTagName('input')[0];
-        cmdInputElem.focus();
         this.cmdInput.on('change', (e) => {
             if (e.value.length > 0 && !e.value.startsWith("!#")) {
                 const res = commandProcessor.processCommand(e.value, this.cmdState);

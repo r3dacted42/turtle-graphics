@@ -9,10 +9,11 @@ export default class Turtle {
         this.position = [x, y];
         // turn angle
         this.angle = 0;
+        this.hidden = false;
 
         this.z = 1;
         this.updateVerts();
-        this.fillColor = [0, 1, 0.15, 1];
+        this.fillColor = [0, 1, 0.5, 1];
         this.lineColor = [0, 0, 0, 1];
         this.fill = true;
         this.lineDrawMode = window['glContext'].LINE_STRIP;
@@ -35,14 +36,11 @@ export default class Turtle {
         console.log(rad);
         const temp = mat3.create();
         mat3.fromTranslation(temp, [0, -amount]);
-        // console.log("translation:", temp);
         mat3.multiply(temp, mat3.fromRotation(mat3.create(), rad), temp);
-        // console.log("post rot:", temp);
         const delta = vec2.create();
         vec2.transformMat3(delta, delta, temp);
         this.position[0] += delta[0];
         this.position[1] += delta[1];
-        // console.log("new position:", this.position);
         this.updateVerts();
     }
 
@@ -70,6 +68,7 @@ export default class Turtle {
     }
 
     getDrawModes() {
+        if (this.hidden) return [];
         const modes = [{
             vertices: this.vertices,
             drawMode: this.fillDrawMode,
