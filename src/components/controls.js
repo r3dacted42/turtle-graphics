@@ -185,6 +185,13 @@ export default class Controls {
             cmdInputElem.value = 'repeat $RARG { forward $FARG turn $TARG }';
             cmdInputElem.setSelectionRange(7, 12);
         });
+        cmdInputElem.addEventListener('keydown', (e) => {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                const pos = cmdInputElem.value.indexOf("$");
+                cmdInputElem.setSelectionRange(pos, pos + 5);
+            }
+        });
         this.cmdState = {
             primNameInp: null,
             fillCheckBox: null,
