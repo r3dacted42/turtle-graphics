@@ -1,4 +1,4 @@
-import { Primitive2D } from "../lib/primitive2d";
+import Primitive2D from "../lib/primitive2d";
 
 export default class CommandProcessor {
     constructor(scene, onPrimStart, onPrimEnd) {

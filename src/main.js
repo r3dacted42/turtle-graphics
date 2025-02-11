@@ -1,11 +1,14 @@
 import './style.css'
-import { Scene, WebGLRenderer, Shader } from './lib/threeD.js';
+import Scene from './lib/scene.js';
+import Shader from './lib/shader.js';
+import WebGLRenderer from './lib/renderer.js';
 import { vertexShaderSrc } from './shaders/vertex.js';
 import { fragmentShaderSrc } from './shaders/fragment.js';
 import Turtle from './components/turtle.js';
-import { Primitive2D } from './lib/primitive2d.js';
+import Primitive2D from './lib/primitive2d.js';
 import { drawModes } from './lib/drawModes.js';
 import Controls from './components/controls.js';
+import Selector from './components/selector.js';
 
 const canvas = document.getElementById('main-canvas');
 const renderer = new WebGLRenderer(canvas);
@@ -24,11 +27,8 @@ const scene = new Scene(turtle);
 
 addDefaultPrimitives(scene);
 
-document.addEventListener("click", (event) => {
-  console.log("clicked at ", event.clientX, event.clientY);
-});
-
 const controls = new Controls(scene);
+const selector = new Selector(canvas, scene, controls);
 
 const resizeCanvasToDisplaySize = () => {
   const { width, height } = renderer.getSize();

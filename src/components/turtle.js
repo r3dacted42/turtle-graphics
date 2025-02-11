@@ -1,5 +1,5 @@
 import { glMatrix, mat3, vec2 } from "gl-matrix";
-import { Transform } from "../lib/transform";
+import Transform from "../lib/transform";
 
 export default class Turtle {
     constructor(x, y) {

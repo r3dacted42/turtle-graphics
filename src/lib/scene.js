@@ -1,49 +1,44 @@
-import { mat3 } from "gl-matrix";
-import { Transform } from "./transform";
+import Transform from "./transform";
 
-export class Scene
-{
-	constructor(turle)
-	{
+export default class Scene {
+	constructor(turle) {
 		this.primitives = []
 		this.turtle = turle;
 		this.transform = new Transform();
+		this.groups = [];
 	}
 
-	add(primitive)
-	{
-		if( this.primitives && primitive )
-		{
-			this.primitives.push(primitive)
-            console.log(this.primitives)
+	add(primitive) {
+		if (primitive) {
+			this.primitives.push(primitive);
 		}
 	}
 
-    remove(primitive) 
-	{
-		if (this.primitives && primitive) {
-			let index = this.primitives.indexOf(primitive);
+	addGroup(group) {
+		if (group) {
+			this.groups.push(group);
+		}
+	}
+
+	remove(primOrGroup) {
+		if (primOrGroup) {
+			let index = this.primitives.indexOf(primOrGroup);
 			if (index > -1) {
 				this.primitives.splice(index, 1);
+			}
+			index = this.groups.indexOf(primOrGroup);
+			if (index > -1) {
+				this.groups.splice(index, 1);
 			}
 		}
 	}
 
-	getPrimitives() 
-	{
+	getPrimitives() {
 		return [...this.primitives, this.turtle];
 	}
 
-
-	getPrimitive(index) 
-	{
-		return this.primitives[index];
-	}
-
-
-	getPrimitiveIndex(primitive) 
-	{
-		return this.primitives.indexOf(primitive);
+	getSelectables() {
+		return [...this.primitives, ...this.groups];
 	}
 
 	movePrimitive(index, delta) {
@@ -54,6 +49,18 @@ export class Scene
 		const moving = this.primitives.splice(index, 1);
 		this.primitives.splice(destIdx, 0, ...moving);
 		return destIdx;
+	}
+
+	activate() {
+		for (const p of this.primitives) {
+			p.activate();
+		}
+	}
+
+	deactivate() {
+		for (const p of this.primitives) {
+			p.deactivate();
+		}
 	}
 
 	getSceneCentroid() {

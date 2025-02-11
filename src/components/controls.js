@@ -11,26 +11,29 @@ export default class Controls {
             container: document.getElementById("prim"),
         });
         this.pane = pane;
-        this.state = {
-            primitive: -1,
-        };
+        this.selectionIdx = -1;
         this.primBinding = pane.addBinding(
-            this.state, 'primitive',
+            this, 'selectionIdx',
             {
-                options: this.getPrimitiveOptions(),
+                options: this.getSelectionOptions(),
                 label: undefined,
             }
         );
-        this.onPrimSelectionChange = (newIdx) => {
-            console.log(this.state);
-            for (const prim of this.scene.primitives) {
+        this.onSelectionChange = (newIdx) => {
+            console.log(newIdx);
+            for (const prim of this.scene.getSelectables()) {
                 prim.deactivate();
             }
-            const all = newIdx === this.scene.primitives.length;
-            this.showPrimitiveControls(newIdx, all);
+            if (newIdx === -1) {
+                this.selection = null;
+                this.showSelectionControls();
+            }
+            const all = newIdx === -2;
+            this.selection = all ? this.scene : this.scene.getSelectables()[newIdx];
+            this.showSelectionControls(all);
         }
         this.primBinding.on('change', (e) => {
-            this.onPrimSelectionChange(e.value);
+            this.onSelectionChange(e.value);
         });
         this.cmdPane = new Pane({
             title: "command",
@@ -40,50 +43,56 @@ export default class Controls {
         this.showCommandProc();
     }
 
-    getPrimitiveOptions() {
+    getSelectionOptions() {
+        const selectables = this.scene.getSelectables();
         const options = {
             none: -1,
-            ...this.scene.primitives.reduce((acc, p, i) => {
+            ...selectables.reduce((acc, p, i) => {
                 acc[p.name] = i;
                 return acc;
             }, {}),
         }
-        if (this.scene.primitives.length > 1
-            && this.state.primitive !== this.scene.primitives.length) {
-            options['all'] = this.scene.primitives.length;
+        if (this.scene.primitives.length > 1) {
+            options['all'] = -2;
         }
         return options;
     }
 
-    updatePrimitiveOptions() {
-        this.primBinding.options = Object.entries(this.getPrimitiveOptions())
+    updateSelectionOptions() {
+        this.primBinding.options = Object.entries(this.getSelectionOptions())
             .map(([key, value]) => ({
                 text: key,
                 value: value
             }));
+        this.primBinding.refresh();
     }
 
-    showPrimitiveControls(idx, all = false) {
+    setSelection(obj) {
+        if (!obj) {
+            this.selectionIdx = -1;
+        } else if (obj === this.scene) {
+            this.selectionIdx = -2;
+        } else {
+            this.selectionIdx = this.scene.getSelectables().indexOf(obj);
+        }
+        this.onSelectionChange(this.selectionIdx);
+        this.updateSelectionOptions();
+    }
+
+    showSelectionControls(all = false) {
         if (this.controls) {
             this.pane.remove(this.controls);
             this.controls.dispose();
         }
-        if (idx === -1) return;
-        const primitive = all ? this.scene : this.scene.primitives[idx];
-        if (all) {
-            for (const prim of this.scene.primitives) {
-                prim.activate();
-            }
-        } else {
-            primitive.activate();
-        }
+        if (!this.selection) return;
+        this.selection.activate();
         this.controls = this.pane.addFolder({
             title: "primitive controls",
         });
         if (!all) {
-            const nameBinding = this.controls.addBinding(primitive, 'name');
+            const nameBinding = this.controls.addBinding(this.selection, 'name');
             nameBinding.on('change', () => {
-                this.updatePrimitiveOptions();
+                this.updateSelectionOptions();
             });
         }
         this.controls.addButton({
@@ -91,90 +100,81 @@ export default class Controls {
         }).on("click", () => {
             if (all) {
                 this.scene.primitives = [];
-                this.updatePrimitiveOptions();
-                this.state.primitive = -1;
-                this.primBinding.refresh();
-                this.showPrimitiveControls(-1);
+                this.scene.groups = [];
+                this.selectionIdx = -1;
             } else {
-                this.scene.remove(primitive);
-                this.updatePrimitiveOptions();
-                this.state.primitive = idx - 1;
-                this.primBinding.refresh();
-                this.showPrimitiveControls(idx - 1);
+                this.scene.remove(this.selection);
+                this.selectionIdx--;
             }
+            this.updateSelectionOptions();
+            this.primBinding.refresh();
+            this.showSelectionControls();
         });
-        if (!all) {
+        const isPrimitive = this.scene.primitives.indexOf(this.selection) !== -1;
+        if (isPrimitive) {
+            const idx = this.scene.primitives.indexOf(this.selection);
             this.controls.addButton({
                 title: "move up",
                 disabled: (idx === 0),
             }).on("click", () => {
-                const newIdx = this.scene.movePrimitive(this.state.primitive, -1);
-                this.updatePrimitiveOptions();
-                this.state.primitive = newIdx;
+                const newIdx = this.scene.movePrimitive(this.selectionIdx, -1);
+                this.updateSelectionOptions();
+                this.selectionIdx = newIdx;
                 this.primBinding.refresh();
-                this.showPrimitiveControls(newIdx);
+                this.showSelectionControls();
             });
             this.controls.addButton({
                 title: "move down",
                 disabled: (idx === this.scene.primitives.length - 1),
             }).on("click", () => {
-                const newIdx = this.scene.movePrimitive(this.state.primitive, +1);
-                this.updatePrimitiveOptions();
-                this.state.primitive = newIdx;
+                const newIdx = this.scene.movePrimitive(this.selectionIdx, +1);
+                this.updateSelectionOptions();
+                this.selectionIdx = newIdx;
                 this.primBinding.refresh();
-                this.showPrimitiveControls(newIdx);
+                this.showSelectionControls();
             });
         }
         const tabs = this.controls.addTab({
             pages: [
                 { title: "transform" },
-                ...(all ? [] : [{ title: "color" }]),
+                ...(!isPrimitive ? [] : [{ title: "color" }]),
             ],
         });
         const transformPage = tabs.pages[0];
-        transformPage.addBinding(primitive.transform, 'translate', {
+        transformPage.addBinding(this.selection.transform, 'translate', {
             min: -750,
             max: 750,
         });
-        transformPage.addBinding(primitive.transform, 'scale', {
-            min: 0,
+        transformPage.addBinding(this.selection.transform, 'scale', {
+            min: -10,
             max: 10,
         });
-        transformPage.addBinding(primitive.transform, 'rotationAngle', {
+        transformPage.addBinding(this.selection.transform, 'rotationAngle', {
             label: 'rotate',
             min: -180,
             max: 180,
         });
         transformPage.addButton({ title: 'reset' })
             .on('click', () => {
-                primitive.transform.translate = { x: 0, y: 0 };
-                primitive.transform.scale = { x: 1, y: 1 };
-                primitive.transform.rotationAngle = 0;
+                this.selection.transform.translate = { x: 0, y: 0 };
+                this.selection.transform.scale = { x: 1, y: 1 };
+                this.selection.transform.rotationAngle = 0;
                 transformPage.children.forEach(c => {
                     if (c.refresh) c.refresh();
                 });
             });
-        if (!all) {
+        if (isPrimitive) {
             const colorPage = tabs.pages[1];
-            colorPage.addBinding(primitive, 'fill');
-            colorPage.addBinding(primitive, 'fillColor', {
+            colorPage.addBinding(this.selection, 'fill');
+            colorPage.addBinding(this.selection, 'fillColor', {
                 view: 'color',
                 label: 'fill color',
             });
-            colorPage.addBinding(primitive, 'lineColor', {
+            colorPage.addBinding(this.selection, 'lineColor', {
                 view: 'color',
                 label: 'line color',
             });
         }
-    }
-
-    refreshList() {
-        this.primBinding.options = Object.entries(this.getPrimitiveOptions())
-            .map(([key, value]) => ({
-                text: key,
-                value: value
-            }));
-        this.primBinding.refresh();
     }
 
     showCommandProc() {
@@ -293,9 +293,8 @@ export default class Controls {
                 this.cmdPane.remove(this.cmdState.primNameInp);
                 this.cmdPane.remove(this.cmdState.fillCheckBox);
                 this.cmdPane.remove(this.cmdState.separator);
-                this.refreshList();
-                this.onPrimSelectionChange(this.scene.primitives.length - 1);
-                this.primBinding.refresh();
+                this.onSelectionChange(this.scene.primitives.length - 1);
+                this.updateSelectionOptions();
             },
         );
         this.cmdInput.on('change', (e) => {

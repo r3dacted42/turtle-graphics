@@ -1,20 +1,21 @@
 import { vec2 } from "gl-matrix";
-import { Transform } from "./transform";
-import { Vertex } from "./vertex";
+import Transform from "./transform";
+import Vertex from "./vertex";
 import { drawModes as allDrawModes } from "./drawModes";
 import { hexToRGBA } from "./utils";
 
-export class Primitive2D {
+export default class Primitive2D {
     constructor(name, fillColor = null, lineColor = null) {
+        this.id = new Date().getTime();
         this.name = name;
         this.verts = [];
         this.z = 1;
         this.fillColor = fillColor ?? "#fff";
         this.lineColor = lineColor ?? "#000",
-        this.currentMode = {
-            fillMode: allDrawModes().tfan,
-            lineMode: allDrawModes().lstrip,
-        };
+            this.currentMode = {
+                fillMode: allDrawModes().tfan,
+                lineMode: allDrawModes().lstrip,
+            };
         this.modes = [{
             ...this.currentMode,
             vertices: [],
@@ -52,7 +53,7 @@ export class Primitive2D {
     activate() {
         this.active = true;
     }
-    
+
     deactivate() {
         this.active = false;
     }
@@ -112,7 +113,7 @@ export class Primitive2D {
         }
         centroid[0] /= vertCount;
         centroid[1] /= vertCount;
-        this.centroid = vec2.fromValues(centroid[0], centroid[1]);
+        this.centroid = centroid;
     }
 
     updateTransformMatrix() {

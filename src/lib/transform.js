@@ -1,6 +1,6 @@
 import { mat3 } from 'gl-matrix';
 
-export class Transform
+export default class Transform
 {
 	constructor()
 	{

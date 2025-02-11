@@ -1,6 +1,6 @@
 import { mat3 } from "gl-matrix";
 
-export class WebGLRenderer {
+export default class WebGLRenderer {
 	constructor(canvas) {
 		this.domElement = canvas;
 		this.gl =
@@ -48,17 +48,23 @@ export class WebGLRenderer {
 		return out;
 	}
 
-	// render function executes all the time
-	// can be thought of as the main game loop
-	// @param {scene} - Scene to render
-	// @param {shader} - Shader to use
-	// for each primitive in the scene, updates the transform matrix and renders the primitve
 	render(scene, shader) {
 		const resMat = this.resolutionMatrix();
 		scene.updateTransformMatrix();
 		const sceneTfMat = scene.transform.transformMatrix;
-		scene.getPrimitives().forEach(function (primitive) {
+		for (const group of scene.groups) {
+			group.updateTransformMatrix();
+		}
+		for (const primitive of scene.getPrimitives()) {
 			primitive.updateTransformMatrix();
+			const grpTfmMat = mat3.create();
+			if (primitive !== scene.turtle) {
+				for (const group of scene.groups) {
+					if (group.hasPrimitive(primitive)) {
+						mat3.multiply(grpTfmMat, group.transform.transformMatrix, grpTfmMat);
+					}
+				}
+			}
 			for (const mode of primitive.getDrawModes()) {
 				shader.bindArrayBuffer(
 					shader.vertexAttributesBuffer,
@@ -67,15 +73,17 @@ export class WebGLRenderer {
 				shader.fillAttributeData("a_position", 3, 0, 0);
 				const tfMatrix = mat3.create();
 				// apply scene transformations
-				if (primitive !== scene.turtle)
+				if (primitive !== scene.turtle) {
 					mat3.multiply(tfMatrix, sceneTfMat, primitive.transform.transformMatrix);
+					mat3.multiply(tfMatrix, grpTfmMat, tfMatrix);
+				}
 				// finally apply resolution matrix
 				mat3.multiply(tfMatrix, resMat, tfMatrix);
 				shader.setUniformMatrix3fv("u_matrix", tfMatrix);
 				shader.setUniform4f("u_color", mode.color);
 				shader.drawArrays(mode.vertices.length / 3, mode.drawMode);
 			}
-		});
+		}
 	}
 
 
