@@ -74,7 +74,8 @@ export default class Selector {
             if (!group) {
                 group = new PrimitiveGroup(
                     `group${this.scene.groups.length}`,
-                    selectedPrims
+                    selectedPrims,
+                    this.scene,
                 );
                 this.scene.addGroup(group);
             }

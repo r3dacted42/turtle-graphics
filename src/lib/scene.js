@@ -1,3 +1,4 @@
+import { vec2, mat3 } from "gl-matrix";
 import Transform from "./transform";
 
 export default class Scene {
@@ -63,11 +64,22 @@ export default class Scene {
 		}
 	}
 
+	getTransformedCentroid(primitive, group) {
+		const tfm = mat3.create();
+		mat3.multiply(tfm, primitive.transform.transformMatrix, tfm);
+		for (const g of this.groups) {
+			if (g.hasPrimitive(primitive) && g !== group)
+				mat3.multiply(tfm, g.transform.transformMatrix, tfm);
+		}
+		return vec2.transformMat3([0, 0], primitive.centroid, tfm);
+	}
+
 	getSceneCentroid() {
 		const centroid = [0, 0];
 		for (const prim of this.primitives) {
-			centroid[0] += prim.centroid[0];
-			centroid[1] += prim.centroid[1];
+			const tc = this.getTransformedCentroid(prim, null);
+			centroid[0] += tc[0];
+			centroid[1] += tc[1];
 		}
 		centroid[0] /= this.primitives.length;
 		centroid[1] /= this.primitives.length;

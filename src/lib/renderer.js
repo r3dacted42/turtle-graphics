@@ -73,6 +73,7 @@ export default class WebGLRenderer {
 				shader.fillAttributeData("a_position", 3, 0, 0);
 				const tfMatrix = mat3.create();
 				// apply scene transformations
+				// primTf -> groupTf(s) -> sceneTf
 				if (primitive !== scene.turtle) {
 					mat3.multiply(tfMatrix, grpTfmMat, primitive.transform.transformMatrix);
 					mat3.multiply(tfMatrix, sceneTfMat, tfMatrix);

@@ -1,11 +1,12 @@
 import Transform from "./transform";
 
 export default class PrimitiveGroup {
-    constructor(name, primitives) {
+    constructor(name, primitives, scene) {
         this.id = new Date().getTime();
         this.name = name;
         this.primitives = primitives;
         this.transform = new Transform();
+        this.scene = scene;
     }
 
     hasPrimitive(primitive) {
@@ -35,7 +36,7 @@ export default class PrimitiveGroup {
     getGroupCentroid() {
 		const centroid = [0, 0];
 		for (const prim of this.primitives) {
-            const tc = prim.getTransformedCentroid();
+            const tc = this.scene.getTransformedCentroid(prim, this);
 			centroid[0] += tc[0];
 			centroid[1] += tc[1];
 		}
