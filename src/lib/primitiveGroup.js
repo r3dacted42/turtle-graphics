@@ -35,8 +35,9 @@ export default class PrimitiveGroup {
     getGroupCentroid() {
 		const centroid = [0, 0];
 		for (const prim of this.primitives) {
-			centroid[0] += prim.centroid[0];
-			centroid[1] += prim.centroid[1];
+            const tc = prim.getTransformedCentroid();
+			centroid[0] += tc[0];
+			centroid[1] += tc[1];
 		}
 		centroid[0] /= this.primitives.length;
 		centroid[1] /= this.primitives.length;
