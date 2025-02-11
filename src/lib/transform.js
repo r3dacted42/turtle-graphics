@@ -12,7 +12,7 @@ export class Transform
 		mat3.identity(this.transformMatrix);
 	}
 
-	updateTransformMatrix(resMat, centroid)
+	updateTransformMatrix(centroid)
 	{
 		mat3.identity(this.transformMatrix);
 		const temp = mat3.create();
@@ -23,7 +23,5 @@ export class Transform
 		// move back to original position
 		mat3.multiply(this.transformMatrix, mat3.fromTranslation(temp, centroid), this.transformMatrix);
 		mat3.multiply(this.transformMatrix, mat3.fromTranslation(temp, [this.translate.x, this.translate.y]), this.transformMatrix);
-		// apply resolution matrix
-		mat3.multiply(this.transformMatrix, resMat, this.transformMatrix);
 	}
 }

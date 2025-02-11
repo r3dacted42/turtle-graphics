@@ -115,7 +115,7 @@ export class Primitive2D {
         this.centroid = vec2.fromValues(centroid[0], centroid[1]);
     }
 
-    updateTransformMatrix(resMat) {
-        this.transform.updateTransformMatrix(resMat, this.centroid);
+    updateTransformMatrix() {
+        this.transform.updateTransformMatrix(this.centroid);
     }
 }

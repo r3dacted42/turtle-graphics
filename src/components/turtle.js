@@ -81,8 +81,7 @@ export default class Turtle {
         return modes;
     }
 
-    updateTransformMatrix(resMat) {
-        // only needed to convert screen to clip coords
-        this.transform.updateTransformMatrix(resMat, [0, 0]);
+    updateTransformMatrix() {
+        // don't need this anymore
     }
 }

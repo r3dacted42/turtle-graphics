@@ -41,9 +41,9 @@ export class WebGLRenderer {
 	resolutionMatrix() {
 		const w = this.gl.canvas.width, h = this.gl.canvas.height;
 		const out = mat3.fromValues(
-			2 / w,		0,		0,
-			0,		-2 / h,		0,
-			-1, 		1,		1
+			2 / w, 0, 0,
+			0, -2 / h, 0,
+			-1, 1, 1
 		);
 		return out;
 	}
@@ -55,16 +55,23 @@ export class WebGLRenderer {
 	// for each primitive in the scene, updates the transform matrix and renders the primitve
 	render(scene, shader) {
 		const resMat = this.resolutionMatrix();
-
+		scene.updateTransformMatrix();
+		const sceneTfMat = scene.transform.transformMatrix;
 		scene.getPrimitives().forEach(function (primitive) {
-			primitive.updateTransformMatrix(resMat);
+			primitive.updateTransformMatrix();
 			for (const mode of primitive.getDrawModes()) {
 				shader.bindArrayBuffer(
 					shader.vertexAttributesBuffer,
 					mode.vertices
 				);
 				shader.fillAttributeData("a_position", 3, 0, 0);
-				shader.setUniformMatrix3fv("u_matrix", primitive.transform.transformMatrix);
+				const tfMatrix = mat3.create();
+				// apply scene transformations
+				if (primitive !== scene.turtle)
+					mat3.multiply(tfMatrix, sceneTfMat, primitive.transform.transformMatrix);
+				// finally apply resolution matrix
+				mat3.multiply(tfMatrix, resMat, tfMatrix);
+				shader.setUniformMatrix3fv("u_matrix", tfMatrix);
 				shader.setUniform4f("u_color", mode.color);
 				shader.drawArrays(mode.vertices.length / 3, mode.drawMode);
 			}
