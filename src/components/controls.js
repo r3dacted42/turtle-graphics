@@ -13,7 +13,6 @@ export default class Controls {
         this.pane = pane;
         this.state = {
             primitive: -1,
-            lastPrim: -1,
         };
         this.primBinding = pane.addBinding(
             this.state, 'primitive',
@@ -22,20 +21,16 @@ export default class Controls {
                 label: undefined,
             }
         );
-        this.primBinding.on('change', (e) => {
-            if (this.state.lastPrim !== -1) {
-                if (this.state.lastPrim !== this.scene.primitives.length) {
-                    this.scene.primitives[this.state.lastPrim]?.deactivate();
-                } else {
-                    for (const prim of this.scene.primitives) {
-                        prim.deactivate();
-                    }
-                }
+        this.onPrimSelectionChange = (newIdx) => {
+            console.log(this.state);
+            for (const prim of this.scene.primitives) {
+                prim.deactivate();
             }
-            const newIdx = e.value;
             const all = newIdx === this.scene.primitives.length;
-            this.showPrimitiveControls(e.value, all);
-            this.state.lastPrim = e.value;
+            this.showPrimitiveControls(newIdx, all);
+        }
+        this.primBinding.on('change', (e) => {
+            this.onPrimSelectionChange(e.value);
         });
         this.cmdPane = new Pane({
             title: "command",
@@ -299,6 +294,8 @@ export default class Controls {
                 this.cmdPane.remove(this.cmdState.fillCheckBox);
                 this.cmdPane.remove(this.cmdState.separator);
                 this.refreshList();
+                this.onPrimSelectionChange(this.scene.primitives.length - 1);
+                this.primBinding.refresh();
             },
         );
         this.cmdInput.on('change', (e) => {
