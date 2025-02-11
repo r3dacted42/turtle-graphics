@@ -41,4 +41,14 @@ export class Scene
 	{
 		return this.primitives.indexOf(primitive);
 	}
+
+	movePrimitive(index, delta) {
+		const destIdx = index + delta;
+		if (destIdx < 0 || destIdx >= this.primitives.length) {
+			return 0;
+		}
+		const moving = this.primitives.splice(index, 1);
+		this.primitives.splice(destIdx, 0, ...moving);
+		return destIdx;
+	}
 }

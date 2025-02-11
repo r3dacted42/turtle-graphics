@@ -26,8 +26,13 @@ export default class Controls {
             if (this.state.lastPrim !== -1) {
                 this.scene.primitives[this.state.lastPrim]?.deactivate();
             }
-            this.showPrimitiveControls(e.value);
-            this.state.lastPrim = e.value;
+            const newIdx = e.value;
+            if (newIdx === this.scene.primitives.length) {
+                // select all
+            } else {
+                this.showPrimitiveControls(e.value);
+                this.state.lastPrim = e.value;
+            }
         });
         this.cmdPane = new Pane({
             title: "command",
@@ -44,7 +49,16 @@ export default class Controls {
                 acc[p.name] = i;
                 return acc;
             }, {}),
+            all: this.scene.primitives.length,
         }
+    }
+
+    updatePrimitiveOptions() {
+        this.primBinding.options = Object.entries(this.getPrimitiveOptions())
+            .map(([key, value]) => ({
+                text: key,
+                value: value
+            }));
     }
 
     showPrimitiveControls(idx) {
@@ -59,26 +73,39 @@ export default class Controls {
         });
         const nameBinding = this.controls.addBinding(primitive, 'name');
         nameBinding.on('change', () => {
-            this.primBinding.options = Object.entries(this.getPrimitiveOptions())
-                .map(([key, value]) => ({
-                    text: key,
-                    value: value
-                }));
+            this.updatePrimitiveOptions();
         });
         const deleteButton = this.controls.addButton({
             title: "delete",
         });
         deleteButton.on("click", () => {
             this.scene.remove(primitive);
-            this.primBinding.options = Object.entries(this.getPrimitiveOptions())
-                .map(([key, value]) => ({
-                    text: key,
-                    value: value
-                }));
+            this.updatePrimitiveOptions();
             this.state.primitive = idx - 1;
             this.primBinding.refresh();
             this.showPrimitiveControls(idx - 1);
-            return;
+        });
+        const moveUpButton = this.controls.addButton({
+            title: "move up",
+            disabled: (idx === 0),
+        });
+        moveUpButton.on("click", () => {
+            const newIdx = this.scene.movePrimitive(this.state.primitive, -1);
+            this.updatePrimitiveOptions();
+            this.state.primitive = newIdx;
+            this.primBinding.refresh();
+            this.showPrimitiveControls(newIdx);
+        });
+        const moveDownButton = this.controls.addButton({
+            title: "move down",
+            disabled: (idx === this.scene.primitives.length - 1),
+        });
+        moveDownButton.on("click", () => {
+            const newIdx = this.scene.movePrimitive(this.state.primitive, +1);
+            this.updatePrimitiveOptions();
+            this.state.primitive = newIdx;
+            this.primBinding.refresh();
+            this.showPrimitiveControls(newIdx);
         });
         const tabs = this.controls.addTab({
             pages: [
@@ -198,10 +225,8 @@ export default class Controls {
             separator: null,
             lineMode: drawModes().lstrip,
             fillMode: drawModes().tfan,
-            lineModeChanged: false,
-            fillModeChanged: false,
         };
-        const lineModeOpt = this.cmdPane.addBinding(
+        this.cmdPane.addBinding(
             this.cmdState, 'lineMode',
             {
                 label: "line mode",
@@ -212,8 +237,7 @@ export default class Controls {
                 }
             }
         );
-        lineModeOpt.on('change', () => { this.cmdState.lineModeChanged = true });
-        const fillModeOpt = this.cmdPane.addBinding(
+        this.cmdPane.addBinding(
             this.cmdState, 'fillMode',
             {
                 label: "fill mode",
@@ -224,7 +248,6 @@ export default class Controls {
                 }
             }
         );
-        fillModeOpt.on('change', () => { this.cmdState.fillModeChanged = true });
         const commandProcessor = new CommandProcessor(this.scene,
             () => {
                 this.cmdState.primNameInp = this.cmdPane.addBinding(commandProcessor.currentPrimitive, 'name', {
@@ -242,8 +265,6 @@ export default class Controls {
                 this.cmdPane.remove(this.cmdState.primNameInp);
                 this.cmdPane.remove(this.cmdState.fillCheckBox);
                 this.cmdPane.remove(this.cmdState.separator);
-                this.cmdState.lineMode = drawModes().lstrip;
-                this.cmdState.fillMode = drawModes().tfan;
                 this.refreshList();
             },
         );

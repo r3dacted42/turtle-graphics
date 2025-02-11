@@ -17,6 +17,10 @@ export default class CommandProcessor {
                 if (!this.turtle.hidden && tokens[1] === 'down') {
                     res = true;
                     this.currentPrimitive = new Primitive2D(`prim${this.scene.primitives.length}`);
+                    if (state.lineMode != this.currentPrimitive.currentMode.lineMode 
+                        || state.fillMode != this.currentPrimitive.currentMode.fillMode) {
+                        this.currentPrimitive.setMode(state.lineMode, state.fillMode);
+                    }
                     this.currentPrimitive.addVertex(this.turtle.position[0], this.turtle.position[1]);
                     this.scene.add(this.currentPrimitive);
                     this.onPrimStart();
@@ -61,10 +65,9 @@ export default class CommandProcessor {
                     this.turtle.forward(fwdAmount);
                     res = true;
                     if (this.currentPrimitive) {
-                        if (state.lineModeChanged || state.fillModeChanged) {
+                        if (state.lineMode != this.currentPrimitive.currentMode.lineMode 
+                            || state.fillMode != this.currentPrimitive.currentMode.fillMode) {
                             this.currentPrimitive.setMode(state.lineMode, state.fillMode);
-                            state.lineModeChanged = false;
-                            state.fillModeChanged = false;
                         }
                         this.currentPrimitive.addVertex(this.turtle.position[0], this.turtle.position[1]);
                     }
@@ -86,7 +89,6 @@ export default class CommandProcessor {
                 break;
             }
             case 'repeat': {
-                // repeat RARG { forward FARG turn TARG }
                 if (this.turtle.hidden) {
                     res = "!# invalid cmd";
                     break;
