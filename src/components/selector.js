@@ -52,8 +52,10 @@ export default class Selector {
         this.selectionElem.style.height = `${this.bottomRight.y - this.topLeft.y}px`;
         this.selectionElem.style.width = `${this.bottomRight.x - this.topLeft.x}px`;
     }
-
+    
     endSelection() {
+        this.selectionElem.style.top = 0;
+        this.selectionElem.style.left = 0;
         this.selectionElem.style.height = 0;
         this.selectionElem.style.width = 0;
         const selectedPrims = [];

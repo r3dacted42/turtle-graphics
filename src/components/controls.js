@@ -21,7 +21,7 @@ export default class Controls {
         );
         this.onSelectionChange = (newIdx) => {
             console.log(newIdx);
-            for (const prim of this.scene.getSelectables()) {
+            for (const prim of this.scene.primitives) {
                 prim.deactivate();
             }
             if (newIdx === -1) {
