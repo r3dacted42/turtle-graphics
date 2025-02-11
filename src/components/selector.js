@@ -94,12 +94,13 @@ export default class Selector {
                 mat3.multiply(grpTfmMat, group.transform.transformMatrix, grpTfmMat);
             }
         }
+        const sceneTfMat = this.scene.transform.transformMatrix;
         for (const mode of prim.modes) {
             for (const v of mode.vertices) {
                 const vert = [0, 0];
                 const tfm = mat3.create();
-                mat3.multiply(tfm, this.scene.transform.transformMatrix, prim.transform.transformMatrix);
-                mat3.multiply(tfm, grpTfmMat, tfm);
+                mat3.multiply(tfm, grpTfmMat, prim.transform.transformMatrix);
+                mat3.multiply(tfm, sceneTfMat, tfm);
                 vec2.transformMat3(vert, [v.x, v.y], tfm);
                 if (vert[0] < this.topLeft.x || vert[0] > this.bottomRight.x
                     || vert[1] < this.topLeft.y || vert[1] > this.bottomRight.y) {

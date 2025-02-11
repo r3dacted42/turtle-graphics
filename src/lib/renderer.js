@@ -74,8 +74,8 @@ export default class WebGLRenderer {
 				const tfMatrix = mat3.create();
 				// apply scene transformations
 				if (primitive !== scene.turtle) {
-					mat3.multiply(tfMatrix, sceneTfMat, primitive.transform.transformMatrix);
-					mat3.multiply(tfMatrix, grpTfmMat, tfMatrix);
+					mat3.multiply(tfMatrix, grpTfmMat, primitive.transform.transformMatrix);
+					mat3.multiply(tfMatrix, sceneTfMat, tfMatrix);
 				}
 				// finally apply resolution matrix
 				mat3.multiply(tfMatrix, resMat, tfMatrix);
