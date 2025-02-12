@@ -289,12 +289,11 @@ export default class Controls {
                     view: 'separator',
                 });
             },
-            () => {
+            (prim) => {
                 this.cmdPane.remove(this.cmdState.primNameInp);
                 this.cmdPane.remove(this.cmdState.fillCheckBox);
                 this.cmdPane.remove(this.cmdState.separator);
-                this.onSelectionChange(this.scene.primitives.length - 1);
-                this.updateSelectionOptions();
+                this.setSelection(prim);
             },
         );
         this.cmdInput.on('change', (e) => {

@@ -116,6 +116,16 @@ export default class Primitive2D {
         this.centroid = centroid;
     }
 
+    getVertCount() {
+        let vertCount = 0;
+        for (const mode of this.modes) {
+            for (const v of mode.vertices) {
+                vertCount++;
+            }
+        }
+        return vertCount;
+    }
+
     updateTransformMatrix() {
         this.transform.updateTransformMatrix(this.centroid);
     }
