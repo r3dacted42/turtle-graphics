@@ -18,6 +18,11 @@ export default class Selector {
         this.canvas.addEventListener('pointermove', (e) => this.onSelectionMoved(e));
         this.canvas.addEventListener('pointerleave', (e) => this.onSelectionEnd(e));
         this.canvas.addEventListener('pointerup', (e) => this.onSelectionEnd(e));
+        
+        this.canvas.addEventListener('touchdown', (e) => this.onSelectionBegin(e));
+        this.canvas.addEventListener('touchmove', (e) => this.onSelectionMoved(e));
+        this.canvas.addEventListener('touchleave', (e) => this.onSelectionEnd(e));
+        this.canvas.addEventListener('touchup', (e) => this.onSelectionEnd(e));
     }
 
     onSelectionBegin(e) {
